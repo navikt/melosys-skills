@@ -62,7 +62,7 @@ description: |
 
    Hvorfor denne endringen er nødvendig. Kontekst og motivasjon
    som forklarer bakgrunnen for endringen.
-   [MELOSYS-1234](https://jira.adeo.no/browse/MELOSYS-1234)
+   [MELOSYS-1234](https://nav.atlassian.net/browse/MELOSYS-1234)
 
    - Hovedendring 1
    - Hovedendring 2
@@ -129,7 +129,7 @@ Legger til støtte for CDM 4.4-endringer i A008 SED med nytt formål-felt.
 CDM 4.4-spesifikasjonen krever at A008 har et formål-felt for å skille
 mellom "endringsmelding" og "arbeid_flere_land". Implementert bak
 feature toggle for kontrollert utrulling.
-[MELOSYS-7553](https://jira.adeo.no/browse/MELOSYS-7553)
+[MELOSYS-7553](https://nav.atlassian.net/browse/MELOSYS-7553)
 
 - Nytt `formaal`-felt i MedlemskapA008
 - SED-versjon 4.4 ved aktivert toggle
