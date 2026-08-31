@@ -44,6 +44,7 @@ ber om dem (`/<navn>`). Resten kan agenten velge selv basert på `description`.
 | Skill | Hva |
 |-------|-----|
 | `docker-build-push` | Bygge/pushe multi-plattform Docker-images til Google Artifact Registry |
+| `kommentar-standard` | Rydde kommentarer og sjargong mot senior-utvikler-målestokk, med mekanisk verifisering |
 
 ## Bidra
 
