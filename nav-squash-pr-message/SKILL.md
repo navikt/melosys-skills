@@ -17,8 +17,11 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Må starte med en eller flere koder: `1234`, `NOJIRA`, `TOGGLE`, `DWEB`, `G4P`, etc.
-   - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse` eller `1234 G4P Beskrivelse`
+   - Første kode er Jira-nummer (`1234`, minst 3 sifre) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`. Alle andre koder kommer etter (`1234 DAPI Beskrivelse`)
+   - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen. Anbefalt: `TEK` eller `DOK`
+   - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **Tilleggskoder står aldri alene, og kommer alltid etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
+   - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `TEK G4P Beskrivelse`
+   - Nye grunnkoder legges i `REASON_CODES` i scriptet
    - Totalt maks 72 tegn (inkludert ` (#number)` som legges til)
    - Vis feil/advarsler fra scriptet til brukeren
 
@@ -30,13 +33,18 @@ description: |
      - Options: De genererte alternativene
    - Brukeren kan også velge "Other" for å skrive egen
 
-4. Hvis Jira-nummer mangler:
-   - Bruk **AskUserQuestion** med multiple choice:
+4. Hvis scriptet avviser prefikset (mangler Jira-nummer eller grunnkode, `NOJIRA`, eller en annen kode først, som `G4P` eller `DAPI`):
+   - Bruk **AskUserQuestion** med multiple choice. Ikke gjett et Jira-nummer ut fra tall i tittelen — et tall etter `G4P` eller `DAPI` kan være et årstall eller en telling:
      - Header: "Jira-nummer"
-     - Question: "Tittelen mangler Jira-nummer. Hva skal brukes?"
+     - Question: "Tittelen mangler Jira-nummer eller grunnkode først. Hva skal stå først?"
      - Options:
-       - "NOJIRA" (for endringer uten Jira-sak)
        - "Angi nummer" (lar bruker skrive inn)
+       - "TEK (Anbefalt)" (kun tekniske endringer, trenger ikke Jira)
+       - "DOK (Anbefalt)" (dokumentasjon uten Jira-sak)
+       - "VAKT" (vaktarbeid uten Jira-sak)
+     - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
+   - Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode (`G4P TEK Rydd`, `DB TEK Rydd`), legg til omstokket tittel som første valg (`TEK G4P Rydd`, `TEK DB Rydd`)
+   - Behold alle tilleggskoder (`G4P`, `TOGGLE`, `DAPI` …) etter den nye koden, og fjern et nummer brukeren nå har satt først (`DAPI 7990 Rydd` + «7990» → `7990 DAPI Rydd`)
    - Valider på nytt etter brukerens valg
 
 5. Create commit message following git best practices:
