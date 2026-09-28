@@ -17,10 +17,10 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Må starte med Jira-nummer (`1234`) eller en grunnkode (`VAKT`, `PRODFIX`, `DOK`)
-   - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen (`VAKT`, `PRODFIX`, `DOK`, …)
-   - Tilleggskoder: `TOGGLE`, `G4P`, `DWEB`/`DAPI` (Dependabot). **`G4P` og `TOGGLE` står aldri alene.**
-   - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `VAKT G4P Beskrivelse`
+   - Må starte med Jira-nummer (`1234`) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`
+   - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen. Anbefalt: `TEK` eller `DOK`
+   - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **`G4P` og `TOGGLE` står aldri alene, og kommer etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
+   - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `TEK G4P Beskrivelse`
    - Nye grunnkoder legges i `REASON_CODES` i scriptet
    - Totalt maks 72 tegn (inkludert ` (#number)` som legges til)
    - Vis feil/advarsler fra scriptet til brukeren
@@ -39,11 +39,11 @@ description: |
      - Question: "Tittelen mangler Jira-nummer. Hva skal brukes?"
      - Options:
        - "Angi nummer" (lar bruker skrive inn)
+       - "TEK (Anbefalt)" (kun tekniske endringer, trenger ikke Jira)
+       - "DOK (Anbefalt)" (dokumentasjon uten Jira-sak)
        - "VAKT" (vaktarbeid uten Jira-sak)
-       - "PRODFIX" (rask fiks av prodfeil uten Jira-sak)
-       - "DOK" (dokumentasjon uten Jira-sak)
-     - Tilby aldri `NOJIRA`. Med "Other" kan brukeren oppgi en annen grunnkode.
-   - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`VAKT G4P Beskrivelse`)
+     - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
+   - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`TEK G4P Beskrivelse`)
    - Valider på nytt etter brukerens valg
 
 5. Create commit message following git best practices:

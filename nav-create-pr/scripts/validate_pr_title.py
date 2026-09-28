@@ -3,28 +3,32 @@
 Validate PR title for squash merge commits.
 
 Rules:
-- Must start with a Jira number (e.g., 1234) or a reason code (VAKT, PRODFIX)
-- TOGGLE, G4P and Dependabot codes (DWEB, DAPI) may be added; TOGGLE and G4P
-  never stand alone
+- Must contain a Jira number (e.g., 1234) or a reason code (TEK, DOK, VAKT, PRODFIX)
+- TOGGLE and G4P never stand alone and come after the Jira number or reason code
+- Dependency codes (DAPI, DWEB, DB, ...) may be added, before or after
 - NOJIRA is no longer allowed: a missing Jira needs a stated reason
 - Max 72 characters total (git recommendation)
 """
+
+# Keeps `int | None` unevaluated, so the script runs on macOS /usr/bin/python3 (3.9).
+from __future__ import annotations
 
 import re
 import sys
 
 MAX_TITLE_LENGTH = 72
-# Anchor codes say where the work comes from; a title needs at least one.
-# Modifier codes only qualify an anchor.
-# - \d+     : Jira number (e.g., 1234, 7553)
-# - D[A-Z]+ : Dependabot (DWEB, DAPI, etc.)
+# Anchor codes say where the work comes from; a title needs one.
+# - \d+ : Jira number (e.g., 1234, 7553)
 # - REASON_CODES : why there is no Jira ticket. Add new reasons here.
-# - MODIFIER_CODES : TOGGLE (feature toggle), G4P (good for prod) — never alone
+# Other codes only qualify an anchor:
+# - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod) — after the anchor,
+#   so a number that starts the description ("G4P 2 nye felt") is not read as Jira
+# - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN)
 # NOJIRA is parsed only so it gets a targeted error: it gives no reason.
-REASON_CODES = ('VAKT', 'PRODFIX', 'DOK')
-MODIFIER_CODES = ('TOGGLE', 'G4P')
-ANCHOR_PATTERN = rf"^(\d+|D[A-Z]+|{'|'.join(REASON_CODES)})$"
-CODE_PATTERN = rf"(\d+|D[A-Z]+|NOJIRA|{'|'.join(REASON_CODES + MODIFIER_CODES)})"
+REASON_CODES = ('TEK', 'DOK', 'VAKT', 'PRODFIX')
+FLAG_CODES = ('TOGGLE', 'G4P')
+ANCHOR_PATTERN = rf"\d+|{'|'.join(REASON_CODES)}"
+CODE_PATTERN = rf"(\d+|D[A-Z]+|NOJIRA|{'|'.join(REASON_CODES + FLAG_CODES)})"
 # Only the leading run of codes is parsed; the rest is free description.
 PREFIX_PATTERN = rf'^((?:{CODE_PATTERN}\s+)+)'
 
@@ -32,24 +36,28 @@ PREFIX_PATTERN = rf'^((?:{CODE_PATTERN}\s+)+)'
 def prefix_errors(title: str) -> list[str]:
     """Return prefix errors for a title (empty list when valid)."""
     reasons = ', '.join(REASON_CODES)
+    missing_anchor = [
+        f"Tittel må starte med Jira-nummer eller en grunnkode ({reasons}).\n"
+        f"  Valgfrie tilleggskoder: TOGGLE, G4P, DAPI/DWEB/DB (avhengighet).\n"
+        f"  Eksempler: '1234 Beskrivelse', '1234 TOGGLE Beskrivelse', 'TEK Beskrivelse'\n"
+        f"  Nåværende: {title}"
+    ]
     match = re.match(PREFIX_PATTERN, title)
     if not match:
-        return [
-            f"Tittel må starte med Jira-nummer eller en grunnkode ({reasons}).\n"
-            f"  Valgfrie tilleggskoder: TOGGLE, G4P, DWEB/DAPI (Dependabot).\n"
-            f"  Eksempler: '1234 Beskrivelse', '1234 TOGGLE Beskrivelse', 'VAKT Beskrivelse'\n"
-            f"  Nåværende: {title}"
-        ]
+        return missing_anchor
     codes = match.group(1).split()
     if 'NOJIRA' in codes:
         return [
             f"NOJIRA brukes ikke lenger. Bruk Jira-nummer eller en grunnkode ({reasons}).\n"
             f"  Nåværende: {title}"
         ]
-    if not any(re.match(ANCHOR_PATTERN, c) for c in codes):
-        alone = ' '.join(c for c in codes if c in MODIFIER_CODES)
+    anchor = next((i for i, c in enumerate(codes) if re.fullmatch(ANCHOR_PATTERN, c)), None)
+    flags_before = [c for c in codes[:anchor] if c in FLAG_CODES]
+    if anchor is None and not flags_before:
+        return missing_anchor
+    if flags_before:
         return [
-            f"'{alone}' kan ikke stå alene. Legg til Jira-nummer eller en grunnkode ({reasons}).\n"
+            f"'{' '.join(flags_before)}' kan ikke stå alene, og skal stå etter Jira-nummer eller grunnkode ({reasons}).\n"
             f"  Eksempler: '1234 G4P Beskrivelse', 'VAKT G4P Beskrivelse'\n"
             f"  Nåværende: {title}"
         ]
