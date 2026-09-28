@@ -3,7 +3,7 @@
 Validate PR title for squash merge commits.
 
 Rules:
-- Must contain a Jira number (e.g., 1234) or a reason code (TEK, DOK, VAKT, PRODFIX)
+- Must contain a Jira number (3+ digits, e.g. 1234) or a reason code (TEK, DOK, VAKT, PRODFIX)
 - TOGGLE and G4P never stand alone and come after the Jira number or reason code
 - Dependency codes (DAPI, DWEB, DB, ...) may be added, before or after
 - NOJIRA is no longer allowed: a missing Jira needs a stated reason
@@ -18,16 +18,18 @@ import sys
 
 MAX_TITLE_LENGTH = 72
 # Anchor codes say where the work comes from; a title needs one.
-# - \d+ : Jira number (e.g., 1234, 7553)
+# - \d{3,} : Jira number (e.g., 1234, 7553). 3+ digits, so a count that starts
+#   the description ("DB 2 nye tabeller") is not read as Jira.
 # - REASON_CODES : why there is no Jira ticket. Add new reasons here.
 # Other codes only qualify an anchor:
 # - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod) — after the anchor,
-#   so a number that starts the description ("G4P 2 nye felt") is not read as Jira
-# - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN)
+#   so a number that starts the description ("G4P 2026 satser") is not read as Jira
+# - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN);
+#   may stand before the anchor ("DAPI 7990 …")
 # NOJIRA is parsed only so it gets a targeted error: it gives no reason.
 REASON_CODES = ('TEK', 'DOK', 'VAKT', 'PRODFIX')
 FLAG_CODES = ('TOGGLE', 'G4P')
-ANCHOR_PATTERN = rf"\d+|{'|'.join(REASON_CODES)}"
+ANCHOR_PATTERN = rf"\d{{3,}}|{'|'.join(REASON_CODES)}"
 CODE_PATTERN = rf"(\d+|D[A-Z]+|NOJIRA|{'|'.join(REASON_CODES + FLAG_CODES)})"
 # Only the leading run of codes is parsed; the rest is free description.
 PREFIX_PATTERN = rf'^((?:{CODE_PATTERN}\s+)+)'
@@ -37,8 +39,8 @@ def prefix_errors(title: str) -> list[str]:
     """Return prefix errors for a title (empty list when valid)."""
     reasons = ', '.join(REASON_CODES)
     missing_anchor = [
-        f"Tittel må starte med Jira-nummer eller en grunnkode ({reasons}).\n"
-        f"  Valgfrie tilleggskoder: TOGGLE, G4P, DAPI/DWEB/DB (avhengighet).\n"
+        f"Tittel mangler Jira-nummer eller grunnkode ({reasons}) først.\n"
+        f"  Valgfrie tilleggskoder: TOGGLE, G4P, DAPI/DWEB/DB (avhengighet, kan stå foran).\n"
         f"  Eksempler: '1234 Beskrivelse', '1234 TOGGLE Beskrivelse', 'TEK Beskrivelse'\n"
         f"  Nåværende: {title}"
     ]
@@ -55,10 +57,17 @@ def prefix_errors(title: str) -> list[str]:
     flags_before = [c for c in codes[:anchor] if c in FLAG_CODES]
     if anchor is None and not flags_before:
         return missing_anchor
+    flags = ' '.join(flags_before)
+    if anchor is None:
+        return [
+            f"'{flags}' kan ikke stå alene. Legg til Jira-nummer eller grunnkode ({reasons}) foran.\n"
+            f"  Eksempler: '1234 G4P Beskrivelse', 'TEK G4P Beskrivelse'\n"
+            f"  Nåværende: {title}"
+        ]
     if flags_before:
         return [
-            f"'{' '.join(flags_before)}' kan ikke stå alene, og skal stå etter Jira-nummer eller grunnkode ({reasons}).\n"
-            f"  Eksempler: '1234 G4P Beskrivelse', 'VAKT G4P Beskrivelse'\n"
+            f"'{flags}' skal stå etter Jira-nummer eller grunnkode. Flytt koden bak '{codes[anchor]}'.\n"
+            f"  Eksempler: '1234 G4P Beskrivelse', 'TEK G4P Beskrivelse'\n"
             f"  Nåværende: {title}"
         ]
     return []
@@ -114,8 +123,8 @@ def main():
         print("Usage: python validate_pr_title.py <title> [pr_number]")
         print()
         print("Examples:")
-        print('  python validate_pr_title.py "MEL-1234 Add user validation"')
-        print('  python validate_pr_title.py "MEL-1234 Add user validation" 456')
+        print('  python validate_pr_title.py "1234 Legg til validering"')
+        print('  python validate_pr_title.py "1234 Legg til validering" 456')
         sys.exit(1)
 
     title = sys.argv[1]

@@ -17,7 +17,7 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Må starte med Jira-nummer (`1234`) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`
+   - Må starte med Jira-nummer (`1234`, minst 3 sifre) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`. En avhengighetskode kan stå foran (`DAPI 7990 Beskrivelse`)
    - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen. Anbefalt: `TEK` eller `DOK`
    - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **`G4P` og `TOGGLE` står aldri alene, og kommer etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
    - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `TEK G4P Beskrivelse`
@@ -45,6 +45,7 @@ description: |
      - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
    - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`TEK G4P Beskrivelse`)
    - Valider på nytt etter brukerens valg
+   - Står `G4P`/`TOGGLE` foran Jira-nummer eller grunnkode (`G4P TEK Rydd`, `G4P 1234 …`), flytt koden bak ankeret uten å spørre (`TEK G4P Rydd`), og valider på nytt
 
 5. Create commit message following git best practices:
    - **Tittel**: `1234 [KODER] Beskrivelse (#number)` - maks 72 tegn totalt
