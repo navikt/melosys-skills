@@ -17,7 +17,7 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Må starte med Jira-nummer (`1234`, minst 3 sifre) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`. En avhengighetskode kan stå foran (`DAPI 7990 Beskrivelse`)
+   - Første kode er Jira-nummer (`1234`, minst 3 sifre) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`. Bare avhengighetskoder kan stå foran (`DAPI 7990 Beskrivelse`)
    - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen. Anbefalt: `TEK` eller `DOK`
    - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **`G4P` og `TOGGLE` står aldri alene, og kommer etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
    - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `TEK G4P Beskrivelse`
@@ -33,8 +33,8 @@ description: |
      - Options: De genererte alternativene
    - Brukeren kan også velge "Other" for å skrive egen
 
-4. Hvis tittelen mangler Jira-nummer eller grunnkode (også når den starter med `NOJIRA`, eller med `G4P`/`TOGGLE` alene):
-   - Bruk **AskUserQuestion** med multiple choice:
+4. Hvis scriptet avviser prefikset (mangler Jira-nummer eller grunnkode, `NOJIRA`, eller `G4P`/`TOGGLE` først):
+   - Bruk **AskUserQuestion** med multiple choice. Ikke gjett et Jira-nummer ut fra tall i tittelen — et tall etter `G4P` kan være et årstall eller en telling:
      - Header: "Jira-nummer"
      - Question: "Tittelen mangler Jira-nummer. Hva skal brukes?"
      - Options:
@@ -43,9 +43,9 @@ description: |
        - "DOK (Anbefalt)" (dokumentasjon uten Jira-sak)
        - "VAKT" (vaktarbeid uten Jira-sak)
      - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
+   - Står `G4P`/`TOGGLE` først foran en grunnkode (`G4P TEK Rydd`), legg til omstokket tittel som første valg (`TEK G4P Rydd`)
    - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`TEK G4P Beskrivelse`)
    - Valider på nytt etter brukerens valg
-   - Står `G4P`/`TOGGLE` foran Jira-nummer eller grunnkode (`G4P TEK Rydd`, `G4P 1234 …`), flytt koden bak ankeret uten å spørre (`TEK G4P Rydd`), og valider på nytt
 
 5. Create commit message following git best practices:
    - **Tittel**: `1234 [KODER] Beskrivelse (#number)` - maks 72 tegn totalt

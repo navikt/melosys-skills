@@ -3,9 +3,10 @@
 Validate PR title for squash merge commits.
 
 Rules:
-- Must contain a Jira number (3+ digits, e.g. 1234) or a reason code (TEK, DOK, VAKT, PRODFIX)
-- TOGGLE and G4P never stand alone and come after the Jira number or reason code
-- Dependency codes (DAPI, DWEB, DB, ...) may be added, before or after
+- The first code that is not a dependency code must be the anchor: a Jira
+  number (3+ digits, e.g. 1234) or a reason code (TEK, DOK, VAKT, PRODFIX)
+- TOGGLE and G4P come after the anchor, so they never stand alone
+- Dependency codes (DAPI, DWEB, DB, ...) may come before or after the anchor
 - NOJIRA is no longer allowed: a missing Jira needs a stated reason
 - Max 72 characters total (git recommendation)
 """
@@ -17,13 +18,14 @@ import re
 import sys
 
 MAX_TITLE_LENGTH = 72
-# Anchor codes say where the work comes from; a title needs one.
+# Grammar of the leading codes: D-codes*, anchor, then any codes.
+# Anchor codes say where the work comes from:
 # - \d{3,} : Jira number (e.g., 1234, 7553). 3+ digits, so a count that starts
 #   the description ("DB 2 nye tabeller") is not read as Jira.
 # - REASON_CODES : why there is no Jira ticket. Add new reasons here.
-# Other codes only qualify an anchor:
-# - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod) — after the anchor,
-#   so a number that starts the description ("G4P 2026 satser") is not read as Jira
+# Other codes only qualify the anchor:
+# - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod). Never before the
+#   anchor, so a number after them ("G4P 2026 satser") is never read as Jira.
 # - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN);
 #   may stand before the anchor ("DAPI 7990 …")
 # NOJIRA is parsed only so it gets a targeted error: it gives no reason.
@@ -53,24 +55,16 @@ def prefix_errors(title: str) -> list[str]:
             f"NOJIRA brukes ikke lenger. Bruk Jira-nummer eller en grunnkode ({reasons}).\n"
             f"  Nåværende: {title}"
         ]
-    anchor = next((i for i, c in enumerate(codes) if re.fullmatch(ANCHOR_PATTERN, c)), None)
-    flags_before = [c for c in codes[:anchor] if c in FLAG_CODES]
-    if anchor is None and not flags_before:
-        return missing_anchor
-    flags = ' '.join(flags_before)
-    if anchor is None:
+    lead = next((c for c in codes if c in REASON_CODES or not re.fullmatch(r'D[A-Z]+', c)), None)
+    if lead is not None and re.fullmatch(ANCHOR_PATTERN, lead):
+        return []
+    if lead in FLAG_CODES:
         return [
-            f"'{flags}' kan ikke stå alene. Legg til Jira-nummer eller grunnkode ({reasons}) foran.\n"
-            f"  Eksempler: '1234 G4P Beskrivelse', 'TEK G4P Beskrivelse'\n"
+            f"'{lead}' kan ikke stå alene eller først. Start med Jira-nummer eller grunnkode ({reasons}).\n"
+            f"  Eksempler: '1234 {lead} Beskrivelse', 'TEK {lead} Beskrivelse'\n"
             f"  Nåværende: {title}"
         ]
-    if flags_before:
-        return [
-            f"'{flags}' skal stå etter Jira-nummer eller grunnkode. Flytt koden bak '{codes[anchor]}'.\n"
-            f"  Eksempler: '1234 G4P Beskrivelse', 'TEK G4P Beskrivelse'\n"
-            f"  Nåværende: {title}"
-        ]
-    return []
+    return missing_anchor
 
 
 def validate_pr_title(title: str, pr_number: int | None = None) -> tuple[bool, list[str]]:
