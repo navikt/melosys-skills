@@ -17,9 +17,9 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Første kode er Jira-nummer (`1234`, minst 3 sifre) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`. Bare avhengighetskoder kan stå foran (`DAPI 7990 Beskrivelse`)
+   - Første kode er Jira-nummer (`1234`, minst 3 sifre) eller en grunnkode: `TEK` (kun tekniske endringer), `DOK` (dokumentasjon), `VAKT` eller `PRODFIX`. Alle andre koder kommer etter (`7990 DAPI Beskrivelse`, ikke `DAPI 7990 Beskrivelse`)
    - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen. Anbefalt: `TEK` eller `DOK`
-   - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **`G4P` og `TOGGLE` står aldri alene, og kommer etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
+   - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **Tilleggskoder står aldri alene, og kommer alltid etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
    - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `TEK G4P Beskrivelse`
    - Nye grunnkoder legges i `REASON_CODES` i scriptet
    - Totalt maks 72 tegn (inkludert ` (#number)` som legges til)
@@ -33,8 +33,8 @@ description: |
      - Options: De genererte alternativene
    - Brukeren kan også velge "Other" for å skrive egen
 
-4. Hvis scriptet avviser prefikset (mangler Jira-nummer eller grunnkode, `NOJIRA`, eller `G4P`/`TOGGLE` først):
-   - Bruk **AskUserQuestion** med multiple choice. Ikke gjett et Jira-nummer ut fra tall i tittelen — et tall etter `G4P` kan være et årstall eller en telling:
+4. Hvis scriptet avviser prefikset (mangler Jira-nummer eller grunnkode, `NOJIRA`, eller en annen kode først, som `G4P` eller `DAPI`):
+   - Bruk **AskUserQuestion** med multiple choice. Ikke gjett et Jira-nummer ut fra tall i tittelen — et tall etter `G4P` eller `DAPI` kan være et årstall eller en telling:
      - Header: "Jira-nummer"
      - Question: "Tittelen mangler Jira-nummer. Hva skal brukes?"
      - Options:
@@ -43,7 +43,7 @@ description: |
        - "DOK (Anbefalt)" (dokumentasjon uten Jira-sak)
        - "VAKT" (vaktarbeid uten Jira-sak)
      - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
-   - Står `G4P`/`TOGGLE` først foran en grunnkode (`G4P TEK Rydd`), legg til omstokket tittel som første valg (`TEK G4P Rydd`)
+   - Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode (`G4P TEK Rydd`, `DB TEK Rydd`), legg til omstokket tittel som første valg (`TEK G4P Rydd`)
    - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`TEK G4P Beskrivelse`)
    - Valider på nytt etter brukerens valg
 

@@ -3,10 +3,9 @@
 Validate PR title for squash merge commits.
 
 Rules:
-- The first code that is not a dependency code must be the anchor: a Jira
-  number (3+ digits, e.g. 1234) or a reason code (TEK, DOK, VAKT, PRODFIX)
-- TOGGLE and G4P come after the anchor, so they never stand alone
-- Dependency codes (DAPI, DWEB, DB, ...) may come before or after the anchor
+- The first code is always the anchor: a Jira number (3+ digits, e.g. 1234)
+  or a reason code (TEK, DOK, VAKT, PRODFIX)
+- TOGGLE, G4P and dependency codes (DAPI, DWEB, DB, ...) come after the anchor
 - NOJIRA is no longer allowed: a missing Jira needs a stated reason
 - Max 72 characters total (git recommendation)
 """
@@ -18,16 +17,15 @@ import re
 import sys
 
 MAX_TITLE_LENGTH = 72
-# Grammar of the leading codes: D-codes*, anchor, then any codes.
+# Grammar of the leading codes: anchor first, then any codes. Nothing goes
+# before the anchor, so a number after another code ("G4P 2026 satser",
+# "DB 2 nye tabeller") is never read as Jira.
 # Anchor codes say where the work comes from:
-# - \d{3,} : Jira number (e.g., 1234, 7553). 3+ digits, so a count that starts
-#   the description ("DB 2 nye tabeller") is not read as Jira.
+# - \d{3,} : Jira number (e.g., 1234, 7553). 3+ digits, so "2 nye felt" is not Jira.
 # - REASON_CODES : why there is no Jira ticket. Add new reasons here.
 # Other codes only qualify the anchor:
-# - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod). Never before the
-#   anchor, so a number after them ("G4P 2026 satser") is never read as Jira.
-# - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN);
-#   may stand before the anchor ("DAPI 7990 …")
+# - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod)
+# - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN)
 # NOJIRA is parsed only so it gets a targeted error: it gives no reason.
 REASON_CODES = ('TEK', 'DOK', 'VAKT', 'PRODFIX')
 FLAG_CODES = ('TOGGLE', 'G4P')
@@ -42,7 +40,7 @@ def prefix_errors(title: str) -> list[str]:
     reasons = ', '.join(REASON_CODES)
     missing_anchor = [
         f"Tittel mangler Jira-nummer eller grunnkode ({reasons}) først.\n"
-        f"  Valgfrie tilleggskoder: TOGGLE, G4P, DAPI/DWEB/DB (avhengighet, kan stå foran).\n"
+        f"  Valgfrie tilleggskoder etter den: TOGGLE, G4P, DAPI/DWEB/DB (avhengighet).\n"
         f"  Eksempler: '1234 Beskrivelse', '1234 TOGGLE Beskrivelse', 'TEK Beskrivelse'\n"
         f"  Nåværende: {title}"
     ]
@@ -55,8 +53,8 @@ def prefix_errors(title: str) -> list[str]:
             f"NOJIRA brukes ikke lenger. Bruk Jira-nummer eller en grunnkode ({reasons}).\n"
             f"  Nåværende: {title}"
         ]
-    lead = next((c for c in codes if c in REASON_CODES or not re.fullmatch(r'D[A-Z]+', c)), None)
-    if lead is not None and re.fullmatch(ANCHOR_PATTERN, lead):
+    lead = codes[0]
+    if re.fullmatch(ANCHOR_PATTERN, lead):
         return []
     if lead in FLAG_CODES:
         return [
