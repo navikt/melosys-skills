@@ -64,7 +64,7 @@ description: |
 ### Tittel
 - Maks 72 tegn
 - Imperativ form: "Legg til", "Fiks", "Oppdater"
-- Jira-nummer valgfritt (f.eks. `1234 Beskrivelse`)
+- Jira-nummer valgfritt (f.eks. `1234 Beskrivelse`). Bruk aldri `NOJIRA` — uten Jira-sak, oppgi grunnen (`VAKT`, `PRODFIX`) eller dropp prefikset. `G4P` står aldri alene.
 
 ### Body
 - **Hva**: Kort oppsummering av endringene (første avsnitt)

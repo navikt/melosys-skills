@@ -3,7 +3,10 @@
 Validate PR title for squash merge commits.
 
 Rules:
-- Must start with Jira number (e.g., MEL-1234) or NOJIRA
+- Must start with a Jira number (e.g., 1234) or a reason code (VAKT, PRODFIX)
+- TOGGLE, G4P and Dependabot codes (DWEB, DAPI) may be added; TOGGLE and G4P
+  never stand alone
+- NOJIRA is no longer allowed: a missing Jira needs a stated reason
 - Max 72 characters total (git recommendation)
 """
 
@@ -11,14 +14,46 @@ import re
 import sys
 
 MAX_TITLE_LENGTH = 72
-# Valid prefixes (explicit list):
-# - \d+ : Jira number (e.g., 1234, 7553)
-# - NOJIRA : No Jira ticket
-# - TOGGLE : Feature toggle related
+# Anchor codes say where the work comes from; a title needs at least one.
+# Modifier codes only qualify an anchor.
+# - \d+     : Jira number (e.g., 1234, 7553)
 # - D[A-Z]+ : Dependabot (DWEB, DAPI, etc.)
-# - G4P : Specific code
-VALID_PREFIXES = r'(\d+|NOJIRA|TOGGLE|D[A-Z]+|G4P)'
-PREFIX_PATTERN = rf'^({VALID_PREFIXES}\s+)+'
+# - REASON_CODES : why there is no Jira ticket. Add new reasons here.
+# - MODIFIER_CODES : TOGGLE (feature toggle), G4P (good for prod) — never alone
+# NOJIRA is parsed only so it gets a targeted error: it gives no reason.
+REASON_CODES = ('VAKT', 'PRODFIX')
+MODIFIER_CODES = ('TOGGLE', 'G4P')
+ANCHOR_PATTERN = rf"^(\d+|D[A-Z]+|{'|'.join(REASON_CODES)})$"
+CODE_PATTERN = rf"(\d+|D[A-Z]+|NOJIRA|{'|'.join(REASON_CODES + MODIFIER_CODES)})"
+# Only the leading run of codes is parsed; the rest is free description.
+PREFIX_PATTERN = rf'^((?:{CODE_PATTERN}\s+)+)'
+
+
+def prefix_errors(title: str) -> list[str]:
+    """Return prefix errors for a title (empty list when valid)."""
+    reasons = ', '.join(REASON_CODES)
+    match = re.match(PREFIX_PATTERN, title)
+    if not match:
+        return [
+            f"Tittel må starte med Jira-nummer eller en grunnkode ({reasons}).\n"
+            f"  Valgfrie tilleggskoder: TOGGLE, G4P, DWEB/DAPI (Dependabot).\n"
+            f"  Eksempler: '1234 Beskrivelse', '1234 TOGGLE Beskrivelse', 'VAKT Beskrivelse'\n"
+            f"  Nåværende: {title}"
+        ]
+    codes = match.group(1).split()
+    if 'NOJIRA' in codes:
+        return [
+            f"NOJIRA brukes ikke lenger. Bruk Jira-nummer eller en grunnkode ({reasons}).\n"
+            f"  Nåværende: {title}"
+        ]
+    if not any(re.match(ANCHOR_PATTERN, c) for c in codes):
+        alone = ' '.join(c for c in codes if c in MODIFIER_CODES)
+        return [
+            f"'{alone}' kan ikke stå alene. Legg til Jira-nummer eller en grunnkode ({reasons}).\n"
+            f"  Eksempler: '1234 G4P Beskrivelse', 'VAKT G4P Beskrivelse'\n"
+            f"  Nåværende: {title}"
+        ]
+    return []
 
 
 def validate_pr_title(title: str, pr_number: int | None = None) -> tuple[bool, list[str]]:
@@ -35,15 +70,7 @@ def validate_pr_title(title: str, pr_number: int | None = None) -> tuple[bool, l
     errors = []
     warnings = []
 
-    # Check for valid prefix(es)
-    if not re.match(PREFIX_PATTERN, title):
-        errors.append(
-            f"Tittel må starte med en eller flere koder:\n"
-            f"  - Jira-nummer (f.eks. 1234)\n"
-            f"  - NOJIRA, TOGGLE, DWEB, DAPI, G4P, etc.\n"
-            f"  Eksempler: '1234 Beskrivelse', '1234 TOGGLE Beskrivelse'\n"
-            f"  Nåværende: {title}"
-        )
+    errors.extend(prefix_errors(title))
 
     # Calculate full title length (including PR number suffix)
     full_title = title

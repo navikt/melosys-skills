@@ -17,8 +17,11 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Må starte med en eller flere koder: `1234`, `NOJIRA`, `TOGGLE`, `DWEB`, `G4P`, etc.
-   - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse` eller `1234 G4P Beskrivelse`
+   - Må starte med Jira-nummer (`1234`) eller en grunnkode (`VAKT`, `PRODFIX`)
+   - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen (`VAKT`, `PRODFIX`, …)
+   - Tilleggskoder: `TOGGLE`, `G4P`, `DWEB`/`DAPI` (Dependabot). **`G4P` og `TOGGLE` står aldri alene.**
+   - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `VAKT G4P Beskrivelse`
+   - Nye grunnkoder legges i `REASON_CODES` i scriptet
    - Totalt maks 72 tegn (inkludert ` (#number)` som legges til)
    - Vis feil/advarsler fra scriptet til brukeren
 
@@ -30,13 +33,16 @@ description: |
      - Options: De genererte alternativene
    - Brukeren kan også velge "Other" for å skrive egen
 
-4. Hvis Jira-nummer mangler:
+4. Hvis tittelen mangler Jira-nummer eller grunnkode (også når den starter med `NOJIRA`, eller med `G4P`/`TOGGLE` alene):
    - Bruk **AskUserQuestion** med multiple choice:
      - Header: "Jira-nummer"
      - Question: "Tittelen mangler Jira-nummer. Hva skal brukes?"
      - Options:
-       - "NOJIRA" (for endringer uten Jira-sak)
        - "Angi nummer" (lar bruker skrive inn)
+       - "VAKT" (vaktarbeid uten Jira-sak)
+       - "PRODFIX" (rask fiks av prodfeil uten Jira-sak)
+     - Tilby aldri `NOJIRA`. Med "Other" kan brukeren oppgi en annen grunnkode.
+   - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`VAKT G4P Beskrivelse`)
    - Valider på nytt etter brukerens valg
 
 5. Create commit message following git best practices:
