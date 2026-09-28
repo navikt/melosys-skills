@@ -54,7 +54,7 @@ description: |
    - Format med toggle: `1234 TOGGLE Beskrivelse`
    - Format uten toggle: `1234 Beskrivelse`
    - Uten Jira-sak: `TEK Beskrivelse` (kun tekniske endringer) eller `DOK Beskrivelse` (dokumentasjon). `VAKT` og `PRODFIX` går også. `NOJIRA` brukes ikke, og `G4P`/`TOGGLE` står aldri alene, men etter Jira-nummer eller grunnkode.
-   - Ved mangler/feil: bruk AskUserQuestion — spør om Jira-nummer eller grunnkode. Ikke gjett Jira-nummer ut fra tall i tittelen. Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode, tilby omstokket tittel som første valg (`G4P TEK …` → `TEK G4P …`)
+   - Ved mangler/feil: bruk AskUserQuestion — spør om Jira-nummer eller grunnkode. Ikke gjett Jira-nummer ut fra tall i tittelen. Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode, tilby omstokket tittel som første valg (`G4P TEK …` → `TEK G4P …`, `DB TEK …` → `TEK DB …`). Behold alle tilleggskoder etter den nye første koden, og fjern et nummer brukeren nå har satt først.
 
 5. **Generer PR-beskrivelse** i markdown:
 
