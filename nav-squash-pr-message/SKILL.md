@@ -17,8 +17,8 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>" <pr_number>
    ```
-   - Må starte med Jira-nummer (`1234`) eller en grunnkode (`VAKT`, `PRODFIX`)
-   - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen (`VAKT`, `PRODFIX`, …)
+   - Må starte med Jira-nummer (`1234`) eller en grunnkode (`VAKT`, `PRODFIX`, `DOK`)
+   - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen (`VAKT`, `PRODFIX`, `DOK`, …)
    - Tilleggskoder: `TOGGLE`, `G4P`, `DWEB`/`DAPI` (Dependabot). **`G4P` og `TOGGLE` står aldri alene.**
    - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `VAKT G4P Beskrivelse`
    - Nye grunnkoder legges i `REASON_CODES` i scriptet
@@ -41,6 +41,7 @@ description: |
        - "Angi nummer" (lar bruker skrive inn)
        - "VAKT" (vaktarbeid uten Jira-sak)
        - "PRODFIX" (rask fiks av prodfeil uten Jira-sak)
+       - "DOK" (dokumentasjon uten Jira-sak)
      - Tilby aldri `NOJIRA`. Med "Other" kan brukeren oppgi en annen grunnkode.
    - Behold eventuell `G4P`/`TOGGLE` etter den nye koden (`VAKT G4P Beskrivelse`)
    - Valider på nytt etter brukerens valg

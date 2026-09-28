@@ -50,10 +50,10 @@ description: |
    ```bash
    python scripts/validate_pr_title.py "<title>"
    ```
-   - Samme regler som for squash: Jira-nummer eller grunnkode (`VAKT`, `PRODFIX`) først, maks 72 tegn
+   - Samme regler som for squash: Jira-nummer eller grunnkode (`VAKT`, `PRODFIX`, `DOK`) først, maks 72 tegn
    - Format med toggle: `1234 TOGGLE Beskrivelse`
    - Format uten toggle: `1234 Beskrivelse`
-   - Uten Jira-sak: `VAKT Beskrivelse` eller `PRODFIX Beskrivelse`. `NOJIRA` brukes ikke, og `G4P`/`TOGGLE` står aldri alene.
+   - Uten Jira-sak: `VAKT Beskrivelse`, `PRODFIX Beskrivelse` eller `DOK Beskrivelse`. `NOJIRA` brukes ikke, og `G4P`/`TOGGLE` står aldri alene.
    - Ved mangler/feil: bruk AskUserQuestion — spør om Jira-nummer eller grunnkode
 
 5. **Generer PR-beskrivelse** i markdown:
@@ -77,7 +77,7 @@ description: |
 
    `## Notater` kun hvis nødvendig (avhengigheter, spesielle hensyn, etc.)
 
-   **Jira-lenke**: Legg til etter bakgrunn-teksten (kun hvis Jira-nummer, ikke ved grunnkode som VAKT/PRODFIX).
+   **Jira-lenke**: Legg til etter bakgrunn-teksten (kun hvis Jira-nummer, ikke ved grunnkode som VAKT/PRODFIX/DOK).
    Hvis bakgrunnen er uklar fra koden, spør bruker om Jira-teksten med AskUserQuestion.
 
 6. **Vis forslag og vent på godkjenning**

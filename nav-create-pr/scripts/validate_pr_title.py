@@ -21,7 +21,7 @@ MAX_TITLE_LENGTH = 72
 # - REASON_CODES : why there is no Jira ticket. Add new reasons here.
 # - MODIFIER_CODES : TOGGLE (feature toggle), G4P (good for prod) — never alone
 # NOJIRA is parsed only so it gets a targeted error: it gives no reason.
-REASON_CODES = ('VAKT', 'PRODFIX')
+REASON_CODES = ('VAKT', 'PRODFIX', 'DOK')
 MODIFIER_CODES = ('TOGGLE', 'G4P')
 ANCHOR_PATTERN = rf"^(\d+|D[A-Z]+|{'|'.join(REASON_CODES)})$"
 CODE_PATTERN = rf"(\d+|D[A-Z]+|NOJIRA|{'|'.join(REASON_CODES + MODIFIER_CODES)})"
