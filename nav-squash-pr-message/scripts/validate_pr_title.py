@@ -7,6 +7,7 @@ Rules:
   or a reason code (TEK, DOK, VAKT, PRODFIX)
 - TOGGLE, G4P and dependency codes (DAPI, DWEB, DB, ...) come after the anchor
 - NOJIRA is no longer allowed: a missing Jira needs a stated reason
+- A code appears once, and a description follows the codes
 - Max 72 characters total (git recommendation)
 """
 
@@ -26,13 +27,14 @@ MAX_TITLE_LENGTH = 72
 # Other codes only qualify the anchor:
 # - FLAG_CODES : TOGGLE (feature toggle), G4P (good for prod)
 # - D[A-Z]+ : depends on another change (DAPI = melosys-api, DWEB, DB, DDOKGEN)
-# NOJIRA is parsed only so it gets a targeted error: it gives no reason.
 REASON_CODES = ('TEK', 'DOK', 'VAKT', 'PRODFIX')
 FLAG_CODES = ('TOGGLE', 'G4P')
 ANCHOR_PATTERN = rf"\d{{3,}}|{'|'.join(REASON_CODES)}"
-CODE_PATTERN = rf"(\d+|D[A-Z]+|NOJIRA|{'|'.join(REASON_CODES + FLAG_CODES)})"
-# Only the leading run of codes is parsed; the rest is free description.
-PREFIX_PATTERN = rf'^((?:{CODE_PATTERN}\s+)+)'
+CODE_PATTERN = rf"(?:\d+|D[A-Z]+|{'|'.join(REASON_CODES + FLAG_CODES)})"
+# Only the leading run of codes is parsed; the rest is the description.
+PREFIX_PATTERN = rf'((?:{CODE_PATTERN}(?:\s+|$))*)'
+# NOJIRA right after the codes, with or without a colon, gives no reason.
+NOJIRA_PATTERN = r'NOJIRA(?=[:\s]|$)'
 
 
 def prefix_errors(title: str) -> list[str]:
@@ -45,24 +47,36 @@ def prefix_errors(title: str) -> list[str]:
         f"  Nåværende: {title}"
     ]
     match = re.match(PREFIX_PATTERN, title)
-    if not match:
-        return missing_anchor
     codes = match.group(1).split()
-    if 'NOJIRA' in codes:
+    description = title[match.end():]
+    if re.match(NOJIRA_PATTERN, description):
         return [
             f"NOJIRA brukes ikke lenger. Bruk Jira-nummer eller en grunnkode ({reasons}).\n"
             f"  Nåværende: {title}"
         ]
+    if not codes:
+        return missing_anchor
     lead = codes[0]
-    if re.fullmatch(ANCHOR_PATTERN, lead):
-        return []
     if lead in FLAG_CODES:
         return [
             f"'{lead}' kan ikke stå alene eller først. Start med Jira-nummer eller grunnkode ({reasons}).\n"
             f"  Eksempler: '1234 {lead} Beskrivelse', 'TEK {lead} Beskrivelse'\n"
             f"  Nåværende: {title}"
         ]
-    return missing_anchor
+    if not re.fullmatch(ANCHOR_PATTERN, lead):
+        return missing_anchor
+    duplicates = sorted({code for code in codes if codes.count(code) > 1})
+    if duplicates:
+        return [
+            f"Koden {', '.join(duplicates)} står to ganger.\n"
+            f"  Nåværende: {title}"
+        ]
+    if not re.search(r'\w', description):
+        return [
+            f"Tittel mangler beskrivelse etter kodene.\n"
+            f"  Nåværende: {title}"
+        ]
+    return []
 
 
 def validate_pr_title(title: str, pr_number: int | None = None) -> tuple[bool, list[str]]:

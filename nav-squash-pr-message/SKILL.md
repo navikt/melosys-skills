@@ -43,8 +43,8 @@ description: |
        - "DOK (Anbefalt)" (dokumentasjon uten Jira-sak)
        - "VAKT" (vaktarbeid uten Jira-sak)
      - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
-   - Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode (`G4P TEK Rydd`, `DB TEK Rydd`), legg til omstokket tittel som første valg (`TEK G4P Rydd`, `TEK DB Rydd`)
-   - Behold alle tilleggskoder (`G4P`, `TOGGLE`, `DAPI` …) etter den nye koden, og fjern et nummer brukeren nå har satt først (`DAPI 7990 Rydd` + «7990» → `7990 DAPI Rydd`)
+   - Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode (`G4P TEK Rydd`, `DB TEK Rydd`), er omstokket tittel første valg (`TEK G4P Rydd`, `TEK DB Rydd`). Det er plass til fire valg, så den erstatter valget med samme kode, eller `VAKT` når koden ikke har eget valg (`PRODFIX`). `VAKT` oppgis da via "Other".
+   - Behold alle tilleggskoder (`G4P`, `TOGGLE`, `DAPI` …) etter den nye koden. Fjern `NOJIRA` (også `NOJIRA:`), et nummer brukeren nå har satt først, og en kode som ellers ville stått dobbelt (`DAPI 7990 Rydd` + «7990» → `7990 DAPI Rydd`, `NOJIRA: Rydd` + TEK → `TEK Rydd`, `NOJIRA VAKT Rydd` + VAKT → `VAKT Rydd`)
    - Valider på nytt etter brukerens valg
 
 5. Create commit message following git best practices:
