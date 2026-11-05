@@ -21,6 +21,7 @@ description: |
    - **`NOJIRA` brukes ikke.** Mangler Jira-sak, må grunnen stå i tittelen. Anbefalt: `TEK` eller `DOK`
    - Tilleggskoder: `TOGGLE`, `G4P`, og avhengighetskoder `DAPI`/`DWEB`/`DB`/`DDOKGEN` (avhenger av endring i et annet repo). **Tilleggskoder står aldri alene, og kommer alltid etter Jira-nummer eller grunnkode.** Avhengighetskoder er ikke en grunn i seg selv.
    - Kan kombineres: `1234 TOGGLE DWEB Beskrivelse`, `1234 G4P Beskrivelse` eller `TEK G4P Beskrivelse`
+   - Det må stå en beskrivelse etter kodene, og samme kode kan ikke stå to ganger
    - Nye grunnkoder legges i `REASON_CODES` i scriptet
    - Totalt maks 72 tegn (inkludert ` (#number)` som legges til)
    - Vis feil/advarsler fra scriptet til brukeren
@@ -33,7 +34,11 @@ description: |
      - Options: De genererte alternativene
    - Brukeren kan også velge "Other" for å skrive egen
 
-4. Hvis scriptet avviser prefikset (mangler Jira-nummer eller grunnkode, `NOJIRA`, eller en annen kode først, som `G4P` eller `DAPI`):
+4. Hvis scriptet avviser en tittel som allerede starter med Jira-nummer eller grunnkode, trengs ikke spørsmålet under:
+   - `NOJIRA` eller en dobbel kode: fjern den og valider på nytt (`1234 NOJIRA: Rydd` → `1234 Rydd`, `VAKT VAKT Rydd` → `VAKT Rydd`)
+   - Mangler beskrivelse (`1234 TOGGLE`): generer 2-3 forslag ut fra PR-en og spør med **AskUserQuestion**, Header: "Beskrivelse", og valider på nytt
+
+   Hvis scriptet avviser prefikset ellers (mangler Jira-nummer eller grunnkode, `NOJIRA` først, eller en annen kode først, som `G4P` eller `DAPI`):
    - Bruk **AskUserQuestion** med multiple choice. Ikke gjett et Jira-nummer ut fra tall i tittelen — et tall etter `G4P` eller `DAPI` kan være et årstall eller en telling:
      - Header: "Jira-nummer"
      - Question: "Tittelen mangler Jira-nummer eller grunnkode først. Hva skal stå først?"
@@ -43,9 +48,9 @@ description: |
        - "DOK (Anbefalt)" (dokumentasjon uten Jira-sak)
        - "VAKT" (vaktarbeid uten Jira-sak)
      - Tilby aldri `NOJIRA`. `PRODFIX` (rask fiks av prodfeil) og andre grunnkoder oppgis via "Other".
-   - Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode (`G4P TEK Rydd`, `DB TEK Rydd`), er omstokket tittel første valg (`TEK G4P Rydd`, `TEK DB Rydd`). Det er plass til fire valg, så den erstatter valget med samme kode, eller `VAKT` når koden ikke har eget valg (`PRODFIX`). `VAKT` oppgis da via "Other".
-   - Behold alle tilleggskoder (`G4P`, `TOGGLE`, `DAPI` …) etter den nye koden. Fjern `NOJIRA` (også `NOJIRA:`), et nummer brukeren nå har satt først, og en kode som ellers ville stått dobbelt (`DAPI 7990 Rydd` + «7990» → `7990 DAPI Rydd`, `NOJIRA: Rydd` + TEK → `TEK Rydd`, `NOJIRA VAKT Rydd` + VAKT → `VAKT Rydd`)
-   - Valider på nytt etter brukerens valg
+   - Står `G4P`/`TOGGLE` eller en avhengighetskode først foran en grunnkode (`G4P TEK Rydd`, `DB TEK Rydd`), er omstokket tittel første valg (`TEK G4P Rydd`, `TEK DB Rydd`). Det er plass til fire valg, så den erstatter valget med samme kode, eller `VAKT` når koden ikke har eget valg (`PRODFIX`). `VAKT` oppgis da via "Other". Uten beskrivelse (`G4P TEK`) er det ingen omstokket tittel å tilby: spør først, og ta beskrivelsen etterpå.
+   - Behold alle tilleggskoder (`G4P`, `TOGGLE`, `DAPI` …) etter den nye koden. Fjern `NOJIRA` med tegnsetting (`NOJIRA:`, `NOJIRA,`), et nummer brukeren nå har satt først, og en kode som ellers ville stått dobbelt (`DAPI 7990 Rydd` + «7990» → `7990 DAPI Rydd`, `NOJIRA: Rydd` + TEK → `TEK Rydd`, `NOJIRA VAKT Rydd` + VAKT → `VAKT Rydd`)
+   - Valider på nytt etter brukerens valg. Mangler beskrivelsen nå (`G4P` + TEK → `TEK G4P`), spør om den som over, ikke om koden igjen
 
 5. Create commit message following git best practices:
    - **Tittel**: `1234 [KODER] Beskrivelse (#number)` - maks 72 tegn totalt

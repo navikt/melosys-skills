@@ -45,6 +45,32 @@ REJECTED = [
     ("DAPI 7990 Rydd", MANGLER_ANKER),
     ("2 nye felt", MANGLER_ANKER),
     ("Legg til felt", MANGLER_ANKER),
+    ("12 nye felt", MANGLER_ANKER),
+    ("TEK NOJIRA Rydd", NOJIRA_FORBUDT),
+    ("G4P NOJIRA: Rydd", NOJIRA_FORBUDT),
+    ("G4P G4P Rydd", KAN_IKKE_STAA_ALENE),
+    # Fix round 2: tegnsetting rundt NOJIRA
+    ("TEK NOJIRA, Rydd", NOJIRA_FORBUDT),
+    ("TEK NOJIRA; Rydd", NOJIRA_FORBUDT),
+    ("TEK NOJIRA/Rydd", NOJIRA_FORBUDT),
+    ("TEK NOJIRA.", NOJIRA_FORBUDT),
+    ("TEK NOJIRA-", NOJIRA_FORBUDT),
+    ("TEK NOJIRA– Rydd", NOJIRA_FORBUDT),
+    ("TEK [NOJIRA] Rydd", NOJIRA_FORBUDT),
+    ("TEK (NOJIRA) Rydd", NOJIRA_FORBUDT),
+    ("TEK nojira: Rydd", NOJIRA_FORBUDT),
+    ("TEK Nojira: Rydd", NOJIRA_FORBUDT),
+    ("6539 / NOJIRA: Fiks feil", NOJIRA_FORBUDT),
+    ("NOJIRA, Rydd", NOJIRA_FORBUDT),
+    ("TEK NOJIRA-flagget fjernes", NOJIRA_FORBUDT),
+    # Fix round 2: kode med tegnsetting er ikke en beskrivelse
+    ("1234 TOGGLE:", MANGLER_BESKRIVELSE),
+    ("TEK G4P:", MANGLER_BESKRIVELSE),
+    ("TEK DB.", MANGLER_BESKRIVELSE),
+    ("TEK 1234:", MANGLER_BESKRIVELSE),
+    ("TEK _", MANGLER_BESKRIVELSE),
+    ("TEK (#12)", MANGLER_BESKRIVELSE),
+    ("1234 TOGGLE (#55)", MANGLER_BESKRIVELSE),
 ]
 
 ACCEPTED = [
@@ -55,8 +81,14 @@ ACCEPTED = [
     "TEK G4P Rydd",
     "8195 DB DWEB Noe",
     "1234 2 nye felt",
-    "TEK NOJIRA-flagget fjernes",
     "8293 TEK Rydd",
+    "TEK Nojiraregel fjernes",
+    "TEK RYDD",
+    "TEK ÆØÅ",
+    "TEK DB-migrering",
+    "DOK Beskrivelse",
+    "VAKT Rydd",
+    "PRODFIX Rydd",
 ]
 
 

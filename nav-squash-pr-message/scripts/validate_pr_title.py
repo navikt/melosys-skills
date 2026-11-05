@@ -33,8 +33,14 @@ ANCHOR_PATTERN = rf"\d{{3,}}|{'|'.join(REASON_CODES)}"
 CODE_PATTERN = rf"(?:\d+|D[A-Z]+|{'|'.join(REASON_CODES + FLAG_CODES)})"
 # Only the leading run of codes is parsed; the rest is the description.
 PREFIX_PATTERN = rf'((?:{CODE_PATTERN}(?:\s+|$))*)'
-# NOJIRA right after the codes, with or without a colon, gives no reason.
-NOJIRA_PATTERN = r'NOJIRA(?=[:\s]|$)'
+# NOJIRA right after the codes, whatever the punctuation, gives no reason.
+# Later in the description it is free text ("TEK Fjern NOJIRA").
+NOJIRA_PATTERN = r'\W*NOJIRA\b'
+
+
+def has_description(text: str) -> bool:
+    """True when text has a word that is not code-shaped. "TOGGLE:" and "(#12)" have none."""
+    return any(not re.fullmatch(CODE_PATTERN, word) for word in re.findall(r'[^\W_]+', text))
 
 
 def prefix_errors(title: str) -> list[str]:
@@ -49,7 +55,7 @@ def prefix_errors(title: str) -> list[str]:
     match = re.match(PREFIX_PATTERN, title)
     codes = match.group(1).split()
     description = title[match.end():]
-    if re.match(NOJIRA_PATTERN, description):
+    if re.match(NOJIRA_PATTERN, description, re.IGNORECASE):
         return [
             f"NOJIRA brukes ikke lenger. Bruk Jira-nummer eller en grunnkode ({reasons}).\n"
             f"  Nåværende: {title}"
@@ -71,7 +77,7 @@ def prefix_errors(title: str) -> list[str]:
             f"Koden {', '.join(duplicates)} står to ganger.\n"
             f"  Nåværende: {title}"
         ]
-    if not re.search(r'\w', description):
+    if not has_description(description):
         return [
             f"Tittel mangler beskrivelse etter kodene.\n"
             f"  Nåværende: {title}"
